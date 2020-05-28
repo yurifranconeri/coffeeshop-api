@@ -11,6 +11,7 @@ using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.IO;
 using System;
+using CoffeeShopAPI.Application.Filter;
 
 namespace CoffeeShopAPI
 {
@@ -34,8 +35,8 @@ namespace CoffeeShopAPI
 
 
             services.AddControllers();
-            
-            services.AddMvc();
+
+            services.AddMvc(config => { config.Filters.Add(typeof(CustomExceptionFilter));});
 
             services.AddSwaggerGen(c =>
             {

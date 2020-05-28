@@ -28,7 +28,7 @@ namespace CoffeeShopAPI.Repository
         {
             CoffeeShop coffeeShop = await GetById(id);
 
-            if(coffeeShop==null)
+            if (coffeeShop == null)
                 throw new CoffeeShopNotFoundException(id.ToString());
 
             _context.CoffeeShops.Remove(coffeeShop);
