@@ -6,60 +6,61 @@ using CoffeeShopAPI.Models;
 using CoffeeShopAPI.Repository;
 using CoffeeShopAPI.Exceptions;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace CoffeeShopAPI.Controllers
 {
     [Route("api/v1/[controller]")]
     [Produces("application/json")]
     [ApiController]
-    public class CoffeeShopsController : ControllerBase
+    public class CustomersController : ControllerBase
     {
-        private readonly ICoffeeShopAsyncRepository _repository;
+        private readonly ICustomerAsyncRepository _repository;
         private readonly ILogger _logger;
 
-        public CoffeeShopsController(ICoffeeShopAsyncRepository coffeeShopRepository, ILogger<CoffeeShopsController> logger)
+        public CustomersController(ICustomerAsyncRepository customerRepository, ILogger<CustomersController> logger)
         {
-            _repository = coffeeShopRepository;
+            _repository = customerRepository;
             _logger = logger;
         }
 
         /// <summary>
-        /// Get all Coffee Shop Items.
+        /// Get all Customers.
         /// </summary>
-        /// <response code="200">Returns all coffee shop items</response>
+        /// <response code="200">Returns all customers items</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<CoffeeShop>>> GetCoffeeShops()
+        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
         {
-            _logger.LogInformation($"Getting all coffee shop items");
+            _logger.LogInformation($"Getting all customer items");
             
-            IEnumerable<CoffeeShop> coffeeShops = await _repository.GetAll();
-            _logger.LogInformation($"Returned all Shop Items");
+            IEnumerable<Customer> customer = await _repository.GetAll();
+            _logger.LogInformation($"Returned all {customer.Count()} customer items");
 
-            return Ok(coffeeShops);
+            return Ok(customer);
         }
 
         /// <summary>
-        /// Get a specific Coffee Shop Item.
+        /// Get a specific Customer Item.
         /// </summary>
-        /// <param name="id"></param> 
+        /// <param name="cpf"></param> 
         /// <response code="200">Returns the coffee shop item from specific id</response>
         /// <response code="404">Not found the coffee shop item from specific id</response>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CoffeeShop>> GetCoffeeShop(long id)
+        public async Task<ActionResult<Customer>> GetCustomer(long cpf)
         {
-            _logger.LogInformation($"Getting coffee shop item with id: {id}");
-            CoffeeShop coffeeShop = await _repository.GetById(id);
+            _logger.LogInformation($"Getting customer item with id: {cpf}");
+            Customer customer = await _repository.GetById(cpf);
 
-            if (coffeeShop != null)
+            if (customer != null)
             {
-                _logger.LogInformation($"Returning coffee shop item: {coffeeShop.ToString()}");
-                return Ok(coffeeShop);
+                _logger.LogInformation($"Returning customer item: {customer}");
+                return Ok(customer);
             }
 
-            _logger.LogInformation($"Not found coffee shop item: {id}");
+            _logger.LogInformation($"Not found customer item: {cpf}");
             return NotFound();
         }
 
@@ -76,19 +77,19 @@ namespace CoffeeShopAPI.Controllers
         ///    "webSiteURL": "www.cafetando.com"
         ///}
         /// </remarks>
-        /// <param name="coffeeShop"></param>
+        /// <param name="customer"></param>
         /// <returns>A newly created TodoItem</returns>
         /// <response code="201">Returns the newly created Coffee Shop Item</response>
         /// <response code="400">If the coffee shop item is null</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<CoffeeShop>> PostCoffeeShop(CoffeeShop coffeeShop)
+        public async Task<ActionResult<Customer>> PostCoffeeShop(Customer customer)
         {
-            _logger.LogInformation($"Creating coffee shop item: {coffeeShop.ToString()}");
-            await _repository.AddCoffeeShop(coffeeShop);
-            _logger.LogInformation($"Created coffee shop item: {coffeeShop.ToString()}");
-            return CreatedAtAction(nameof(GetCoffeeShop), new { id = coffeeShop.Id }, coffeeShop);
+            _logger.LogInformation($"Creating customer item: {customer}");
+            await _repository.AddCustomer(customer);
+            _logger.LogInformation($"Created customer item: {customer}");
+            return CreatedAtAction(nameof(GetCustomer), new { id = customer.CPF }, customer);
         }
 
         /// <summary>
@@ -104,8 +105,8 @@ namespace CoffeeShopAPI.Controllers
         ///    "webSiteURL": "www.cafetando.com"
         ///}
         /// </remarks>
-        /// <param name="id"></param> 
-        /// <param name="coffeeShop"></param> 
+        /// <param name="cpf"></param> 
+        /// <param name="customer"></param> 
         /// <response code="204">Updates the coffee shop item from specific id</response>
         /// <response code="404">Not found the coffee shop item from specific id</response>
         /// <response code="400">Id from path different from body item</response>
@@ -113,25 +114,25 @@ namespace CoffeeShopAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PutCoffeeShop(long id, CoffeeShop coffeeShop)
+        public async Task<IActionResult> PutCoffeeShop(long cpf, Customer customer)
         {
-            _logger.LogInformation($"Updating coffee shop item with id: {id} and body item: {coffeeShop.ToString()}");
+            _logger.LogInformation($"Updating customer item with CPF: {cpf} and body item: {customer}");
             try
             {
-                if (id != coffeeShop.Id)
+                if (cpf != customer.CPF)
                 {
-                    _logger.LogError($"Id from path: {id} is different from body's item id: {coffeeShop?.Id}");
+                    _logger.LogError($"CPF from path: {cpf} is different from body's item CPF: {customer?.CPF}");
                     return BadRequest();
                 }
 
-                await _repository.UpdateCoffeeShop(coffeeShop);
-                _logger.LogInformation($"Updated coffee shop item with id: {id}");
+                await _repository.UpdateCustomer(customer);
+                _logger.LogInformation($"Updated coffee shop item with id: {cpf}");
                 return NoContent();
 
             }
-            catch (CoffeeShopNotFoundException)
+            catch (CustomerNotFoundException)
             {
-                _logger.LogError($"Not Found coffee shop item with id: {id}");
+                _logger.LogError($"Not Found coffee shop item with id: {cpf}");
                 return NotFound();
             }
         }
@@ -140,25 +141,25 @@ namespace CoffeeShopAPI.Controllers
         /// <summary>
         /// Deletes a specific Coffee Shop Item.
         /// </summary>
-        /// <param name="id"></param> 
+        /// <param name="cpf"></param> 
         /// <response code="204">Deleted sucessfully the specific coffee shop item from id</response>
         /// <response code="404">Not found the specific coffee shop item from id</response>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CoffeeShop>> DeleteCoffeeShop(long id)
+        public async Task<ActionResult<Customer>> DeleteCustomer(long cpf)
         {
-            _logger.LogInformation($"Deleting coffee shop item with id: {id}");
+            _logger.LogInformation($"Deleting coffee shop item with id: {cpf}");
             try
             {
-                await _repository.DeleteCoffeeShop(id);
-                _logger.LogInformation($"Deleted coffee shop item with id: {id}");
+                await _repository.DeleteCustomer(cpf);
+                _logger.LogInformation($"Deleted coffee shop item with id: {cpf}");
                 return NoContent();
             }
 
-            catch (CoffeeShopNotFoundException)
+            catch (CustomerNotFoundException)
             {
-                _logger.LogError($"Not Found coffee shop item with id: {id}");
+                _logger.LogError($"Not Found coffee shop item with id: {cpf}");
                 return NotFound();
             }
         }

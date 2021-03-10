@@ -4,10 +4,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CoffeeShopAPI.Models
 {
-    public class CoffeeShop
+    public class Customer
     {
-        public long Id { get; set; }
-        
         [Required]
         public string Name { get; set; }
         
@@ -15,9 +13,14 @@ namespace CoffeeShopAPI.Models
         public string Description { get; set; }
         
         [Required]
+        [Key]
+        public long CPF { get; set; }
+
+        public string Phone { get; set; }
+
         public string Address { get; set; }
 
-        public string WebSiteURL { get; set; }
+        public string CEP { get; set; }
 
         public override string ToString()
         {
