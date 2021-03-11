@@ -3,10 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using CoffeeShopAPI.Models;
-using CoffeeShopAPI.Repository;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.IO;
@@ -27,13 +24,6 @@ namespace CoffeeShopAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.AddScoped(typeof(ICoffeeShopAsyncRepository), typeof(CoffeeShopAsyncRepositoryEntityFrameworkSQL));
-
-            services.AddDbContext<CoffeeShopContext>(opt =>
-               opt.UseInMemoryDatabase("CoffeeShopList"));
-
-
             services.AddControllers();
 
             services.AddMvc(config => { config.Filters.Add(typeof(CustomExceptionFilter));});
